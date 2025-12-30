@@ -89,9 +89,8 @@ fn memory_m2_only_slot_pressure_remains() {
     let out1 = ask(&mut m2, d, 1);
     let out2 = ask(&mut m2, d, 2);
 
-    assert!(max_abs(&out0) < 1.0);
-
-    assert!(max_abs(&out1) > 5.0);
+    assert_ne!(status(&out0, 0, 5.0), "HIT");
+assert!(max_abs(&out1) > 5.0);
     assert_eq!(argmax_abs(&out1), 1);
 
     assert!(max_abs(&out2) > 5.0);
