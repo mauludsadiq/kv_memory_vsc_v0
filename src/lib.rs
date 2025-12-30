@@ -143,8 +143,20 @@ impl KVMemV0 {
             return;
         }
 
-        let (_, best_s) = self.max_sim(&k);
+        let (best_i, best_s) = self.max_sim(&k);
 
+        // REUSE WRITES: if similarity is high, update that slot (must mutate memory_kv_sha256)
+        if best_s >= self.tau_reuse {
+            let g = self.g_write;
+            for t in 0..self.d {
+                self.km[best_i][t] = (1.0 - g) * self.km[best_i][t] + g * k[t];
+                self.vm[best_i][t] = (1.0 - g) * self.vm[best_i][t] + g * v[t];
+            }
+            self.age[best_i] = 0;
+            return;
+        }
+
+        // NOVELTY GATE: blocks new writes when too similar (but below reuse threshold)
         if best_s >= self.tau_novel {
             return;
         }

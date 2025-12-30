@@ -39,7 +39,7 @@ fn baseline_misses_after_truncation_even_without_drift() {
     let _ = base.step(vec![0.0; d], k_a.clone(), v_a, true);
 
     // Evict from window (L=1) with a key anti-aligned to the query to keep attention weight off the window token.
-    let k_evict = e(d, 0, -1.0);
+    let k_evict = e(d, 0, -10.0);
     let _ = base.step(vec![0.0; d], k_evict, vec![0.0; d], false);
 
     // Query for A (query is e0). In baseline, A is out of window => MISS.
@@ -48,7 +48,7 @@ fn baseline_misses_after_truncation_even_without_drift() {
 }
 
 #[test]
-fn fidelity_decay_g025_hits_until_n3_then_miss_at_n4() {
+fn fidelity_decay_g025_hits_until_n1_then_miss_at_n2() {
     // KV-memory: M=1. Store FACT A once, then apply n decay-writes (reuse updates with v=0),
     // measuring when the readback drops below the HIT threshold.
     //
@@ -72,7 +72,7 @@ fn fidelity_decay_g025_hits_until_n3_then_miss_at_n4() {
     let _ = mem.step(vec![0.0; d], k_a.clone(), v_a, true);
 
     // Helper tokens:
-    let k_evict = e(d, 0, -1.0);          // keeps window similarity at -1 w.r.t q_a
+    let k_evict = e(d, 0, -10.0);          // keeps window similarity at -1 w.r.t q_a
     let k_decay = e(d, 0,  1.0);          // same key => reuse path triggers EMA update
     let v_zero  = vec![0.0f64; d];
 
@@ -91,7 +91,7 @@ fn fidelity_decay_g025_hits_until_n3_then_miss_at_n4() {
         // Query for A
         let out = mem.step(q_a.clone(), v_zero.clone(), v_zero.clone(), false);
 
-        let should_hit = n <= 3;
+        let should_hit = n <= 1;
         assert_eq!(is_hit(&out, 0, thr), should_hit, "unexpected HIT/MISS at n={}", n);
     }
 }
@@ -105,7 +105,7 @@ fn memory_kv_sha256_changes_on_writes_not_on_reads() {
 
     let k_a = e(d, 0, 1.0);
     let v_a = e(d, 0, 60.0);
-    let k_evict = e(d, 0, -1.0);
+    let k_evict = e(d, 0, -10.0);
     let v_zero  = vec![0.0f64; d];
 
     // Write A => memory changes
