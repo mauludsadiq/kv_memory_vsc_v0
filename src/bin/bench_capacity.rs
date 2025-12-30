@@ -23,6 +23,14 @@ fn argmax_abs(x: &[f64]) -> usize {
     bi
 }
 
+fn status(out: &[f64], expect_idx: usize, thr: f64) -> &'static str {
+    if max_abs(out) > thr && argmax_abs(out) == expect_idx {
+        "HIT"
+    } else {
+        "MISS"
+    }
+}
+
 fn write_fact(m: &mut KVMemV0, d: usize, idx: usize) {
     let k = e(d, idx, 10.0);
     let v = e(d, idx, 100.0);
@@ -43,25 +51,21 @@ fn ask(m: &mut KVMemV0, d: usize, idx: usize) -> Vec<f64> {
     m.step(q, z.clone(), z, false)
 }
 
-fn report(name: &str, out: &[f64]) {
-    let a = argmax_abs(out);
-    let m = max_abs(out);
-    println!("{name}: argmax_abs={a} max_abs={m:.3}");
-}
-
 fn main() {
     let d = 8usize;
     let l = 8usize;
+    let n_fill = 64usize;
+    let thr = 5.0f64;
 
-    let tau_reuse = 0.99f64;
-    let tau_novel = 0.00f64;
+    let tau_reuse = 0.85f64;
+    let tau_novel = 0.50f64;
     let g_write = 1.0f64;
 
     let mut base = KVMemV0::new(l, 0, d, tau_reuse, tau_novel, g_write);
     write_fact(&mut base, d, 0);
     write_fact(&mut base, d, 1);
     write_fact(&mut base, d, 2);
-    fill(&mut base, d, 64);
+    fill(&mut base, d, n_fill);
     let b0 = ask(&mut base, d, 0);
     let b1 = ask(&mut base, d, 1);
     let b2 = ask(&mut base, d, 2);
@@ -72,7 +76,7 @@ fn main() {
     write_fact(&mut m2, d, 1);
     fill(&mut m2, d, 1);
     write_fact(&mut m2, d, 2);
-    fill(&mut m2, d, 64);
+    fill(&mut m2, d, n_fill);
     let m20 = ask(&mut m2, d, 0);
     let m21 = ask(&mut m2, d, 1);
     let m22 = ask(&mut m2, d, 2);
@@ -81,28 +85,31 @@ fn main() {
     write_fact(&mut m3, d, 0);
     write_fact(&mut m3, d, 1);
     write_fact(&mut m3, d, 2);
-    fill(&mut m3, d, 64);
+    fill(&mut m3, d, n_fill);
     let m30 = ask(&mut m3, d, 0);
     let m31 = ask(&mut m3, d, 1);
     let m32 = ask(&mut m3, d, 2);
 
-    println!("baseline");
-    report("A", &b0);
-    report("B", &b1);
-    report("C", &b2);
-    println!("baseline_state_sha256: {}", base.state_sha256());
+    println!("capacity_params: L={} d={} n_fill={} M2=2 M3=3 thr={}", l, d, n_fill, thr);
+    println!("baseline: A={} B={} C={}",
+        status(&b0, 0, thr),
+        status(&b1, 1, thr),
+        status(&b2, 2, thr),
+    );
+    println!("m2:       A={} B={} C={}",
+        status(&m20, 0, thr),
+        status(&m21, 1, thr),
+        status(&m22, 2, thr),
+    );
+    println!("m3:       A={} B={} C={}",
+        status(&m30, 0, thr),
+        status(&m31, 1, thr),
+        status(&m32, 2, thr),
+    );
 
-    println!("m2");
-    report("A", &m20);
-    report("B", &m21);
-    report("C", &m22);
+    println!("baseline_state_sha256: {}", base.state_sha256());
     println!("m2_state_sha256: {}", m2.state_sha256());
     println!("m2_memory_kv_sha256: {}", m2.memory_kv_sha256());
-
-    println!("m3");
-    report("A", &m30);
-    report("B", &m31);
-    report("C", &m32);
     println!("m3_state_sha256: {}", m3.state_sha256());
     println!("m3_memory_kv_sha256: {}", m3.memory_kv_sha256());
 }

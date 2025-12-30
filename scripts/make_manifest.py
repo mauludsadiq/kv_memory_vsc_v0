@@ -8,10 +8,7 @@ MANIFEST_JSON = os.path.join(VSC_DIR, "manifest.json")
 MANIFEST_SHA = os.path.join(VSC_DIR, "manifest.sha256")
 
 EXCLUDE_DIRS = {".git", "target"}
-EXCLUDE_FILES = {
-    "vsc/manifest.json",
-    "vsc/manifest.sha256",
-}
+EXCLUDE_FILES = {"vsc/manifest.json", "vsc/manifest.sha256"}
 
 def sha256_file(path: str) -> str:
     h = hashlib.sha256()
@@ -43,21 +40,18 @@ def main():
     for rel in list_files(REPO):
         abs_path = os.path.join(REPO, rel)
         st = os.stat(abs_path)
-        files.append({
-            "path": rel,
-            "bytes": int(st.st_size),
-            "sha256": sha256_file(abs_path),
-        })
+        files.append({"path": rel, "bytes": int(st.st_size), "sha256": sha256_file(abs_path)})
 
     manifest = {
         "schema": "vsc-manifest/v0.1",
         "spec_id": "kv-memory/v0",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "repo": "kv_memory_vsc_v0",
         "entrypoints": {
             "lib": "src/lib.rs",
-            "bench":"src/bin/bench_kv_memory.rs","bench_capacity":"src/bin/bench_capacity.rs",
-            "tests":["tests/kv_memory_v0.rs","tests/kv_memory_capacity.rs"],
+            "bench": "src/bin/bench_kv_memory.rs",
+            "bench_capacity": "src/bin/bench_capacity.rs",
+            "tests": ["tests/kv_memory_v0.rs", "tests/kv_memory_capacity.rs"],
         },
         "determinism": {
             "no_rng": True,
@@ -65,7 +59,7 @@ def main():
             "state_hash": "sha256 over (config, window_KV, memory_KV, ages) in little-endian f64/u64 bytes",
             "tie_break": "argmax ties -> lowest index; LRU ties -> lowest index",
         },
-        "pinned_params":{
+        "pinned_params": {
             "L": 8,
             "M_baseline": 0,
             "M_memory": 1,
@@ -73,10 +67,24 @@ def main():
             "g_write": 1.0,
             "n_fill": 64,
             "tau_reuse": 0.9,
-        ,"cap_L":8,"cap_d":8,"cap_M2":2,"cap_M3":3,"cap_n_fill":64},
+            "cap_L": 8,
+            "cap_d": 8,
+            "cap_tau_reuse": 0.85,
+            "cap_tau_novel": 0.50,
+            "cap_g_write": 1.0,
+            "cap_n_fill": 64,
+            "cap_thr": 5.0,
+            "cap_M2": 2,
+            "cap_M3": 3,
+        },
         "expected": {
             "baseline": "UNKNOWN",
             "kv_memory": "SECRET",
+            "capacity": {
+                "baseline": {"A": "MISS", "B": "MISS", "C": "MISS"},
+                "m2": {"A": "MISS", "B": "HIT", "C": "HIT"},
+                "m3": {"A": "HIT", "B": "HIT", "C": "HIT"},
+            },
         },
         "files": files,
     }

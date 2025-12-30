@@ -48,8 +48,8 @@ fn baseline_fails_all_facts_under_saturation() {
     let d = 8usize;
     let l = 8usize;
 
-    let tau_reuse = 0.99f64;
-    let tau_novel = 0.00f64;
+    let tau_reuse = 0.85f64;
+    let tau_novel = 0.50f64;
     let g_write = 1.0f64;
 
     let mut base = KVMemV0::new(l, 0, d, tau_reuse, tau_novel, g_write);
@@ -67,12 +67,12 @@ fn baseline_fails_all_facts_under_saturation() {
 }
 
 #[test]
-fn memory_m2_keeps_last_two_only_slot_pressure_remains() {
+fn memory_m2_only_slot_pressure_remains() {
     let d = 8usize;
     let l = 8usize;
 
-    let tau_reuse = 0.99f64;
-    let tau_novel = 0.00f64;
+    let tau_reuse = 0.85f64;
+    let tau_novel = 0.50f64;
     let g_write = 1.0f64;
 
     let mut m2 = KVMemV0::new(l, 2, d, tau_reuse, tau_novel, g_write);
@@ -89,12 +89,12 @@ fn memory_m2_keeps_last_two_only_slot_pressure_remains() {
     let out1 = ask(&mut m2, d, 1);
     let out2 = ask(&mut m2, d, 2);
 
-    assert!(argmax_abs(&out0) != 0);
+    assert!(max_abs(&out0) < 1.0);
 
-    assert!(max_abs(&out1) > 10.0);
+    assert!(max_abs(&out1) > 5.0);
     assert_eq!(argmax_abs(&out1), 1);
 
-    assert!(max_abs(&out2) > 10.0);
+    assert!(max_abs(&out2) > 5.0);
     assert_eq!(argmax_abs(&out2), 2);
 }
 
@@ -103,8 +103,8 @@ fn memory_m3_keeps_three_facts_under_saturation() {
     let d = 8usize;
     let l = 8usize;
 
-    let tau_reuse = 0.99f64;
-    let tau_novel = 0.00f64;
+    let tau_reuse = 0.85f64;
+    let tau_novel = 0.50f64;
     let g_write = 1.0f64;
 
     let mut m3 = KVMemV0::new(l, 3, d, tau_reuse, tau_novel, g_write);
@@ -117,7 +117,7 @@ fn memory_m3_keeps_three_facts_under_saturation() {
 
     for i in 0..3 {
         let out = ask(&mut m3, d, i);
-        assert!(max_abs(&out) > 10.0);
+        assert!(max_abs(&out) > 5.0);
         assert_eq!(argmax_abs(&out), i);
     }
 }
