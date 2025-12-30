@@ -56,8 +56,8 @@ def main():
         "repo": "kv_memory_vsc_v0",
         "entrypoints": {
             "lib": "src/lib.rs",
-            "bench": "src/bin/bench_kv_memory.rs",
-            "tests": ["tests/kv_memory_v0.rs"],
+            "bench":"src/bin/bench_kv_memory.rs","bench_capacity":"src/bin/bench_capacity.rs",
+            "tests":["tests/kv_memory_v0.rs","tests/kv_memory_capacity.rs"],
         },
         "determinism": {
             "no_rng": True,
@@ -65,7 +65,7 @@ def main():
             "state_hash": "sha256 over (config, window_KV, memory_KV, ages) in little-endian f64/u64 bytes",
             "tie_break": "argmax ties -> lowest index; LRU ties -> lowest index",
         },
-        "pinned_params": {
+        "pinned_params":{
             "L": 8,
             "M_baseline": 0,
             "M_memory": 1,
@@ -73,7 +73,7 @@ def main():
             "g_write": 1.0,
             "n_fill": 64,
             "tau_reuse": 0.9,
-        },
+        ,"cap_L":8,"cap_d":8,"cap_M2":2,"cap_M3":3,"cap_n_fill":64},
         "expected": {
             "baseline": "UNKNOWN",
             "kv_memory": "SECRET",
