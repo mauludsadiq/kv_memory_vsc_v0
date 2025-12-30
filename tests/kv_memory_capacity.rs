@@ -43,6 +43,10 @@ fn ask(m: &mut KVMemV0, d: usize, idx: usize) -> Vec<f64> {
     m.step(q, z.clone(), z, false)
 }
 
+fn is_hit(out: &[f64], expect_idx: usize, thr: f64) -> bool {
+    max_abs(out) > thr && argmax_abs(out) == expect_idx
+}
+
 #[test]
 fn baseline_fails_all_facts_under_saturation() {
     let d = 8usize;
@@ -89,7 +93,7 @@ fn memory_m2_only_slot_pressure_remains() {
     let out1 = ask(&mut m2, d, 1);
     let out2 = ask(&mut m2, d, 2);
 
-    assert_ne!(status(&out0, 0, 5.0), "HIT");
+    assert!(!is_hit(&out0, 0, 5.0));
 assert!(max_abs(&out1) > 5.0);
     assert_eq!(argmax_abs(&out1), 1);
 
